@@ -1,0 +1,325 @@
+<!--
+   face.html
+   
+   Copyright 2013 dnclive <dnclive@ubunlive3>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+   MA 02110-1301, USA.
+-->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+	<title>Тест для ОНТИКО</title>
+	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<meta name="generator" content="Geany 0.21" />
+	
+	<link rel="stylesheet" type="text/css" href="css.css">
+	
+	<!--script data-main="/" src="requirejs/require.js"></script!-->
+	
+	<script>
+		var dojoConfig = 
+		{
+			async:true,
+			isDebug:false,
+			cacheBust:false,
+			parseOnLoad: true,
+			locale:'ru',
+			waitSeconds:5,
+			paths:
+			{
+				"tlib":"../tlib",
+				"res":"../../../../../../res",
+				"tpl":"",
+			},
+		};
+	</script>
+	</script>
+	<script src="res/josi_lib/js/dev/dojo/dojo/dojo.js"></script>
+	
+	<script>
+		var mod_1;
+		var mod_2;
+		require
+		(
+			[	
+				//"XMLHttpRequest.js",
+				"dojo/_base/xhr",
+				"dojo/dom-class",
+				"dojo/query",
+				"dojo/on",
+				"tlib/tuti",
+			],
+			function
+			(
+				t_xhr,
+				t_dom,
+				t_query,
+				t_on,
+				t_uti
+			)
+			{
+				mod_1=
+				{
+					
+					args:
+					{
+						filling_students:false,
+						vkcom:
+						{
+							access_token:"",
+						}
+					},
+					
+					//получение токена доступа к vk.com
+					f_get_token:function(args)
+					{
+						var win=window.open("https://oauth.vk.com/authorize?client_id=1"+
+								"&redirect_uri=https://oauth.vk.com/blank.html"+
+								"&scope=12&response_type=token",'mywindow','width=400,height=200')
+						
+						//var win=window.open("https://oauth.vk.com/authorize?client_id=1"+
+						//		"&redirect_uri=http://dnclive.ru"+
+						//		"&scope=12&response_type=code",'mywindow','width=400,height=200')
+						
+						setTimeout(function()
+						{
+							console.log(win, win.loaction, win.location);
+						},10000);
+						
+						//console.log(win, win.loaction, win.location);
+						
+						return;
+						
+						t_xhr("GET",
+						{
+							url:"https://oauth.vk.com/authorize?client_id=1"+
+								"&redirect_uri=https://oauth.vk.com/blank.html"+
+								"&scope=12&response_type=token",
+							handleAs:"text",
+							load: function(data)
+							{
+								console.log(data);
+								
+							},
+							error:function(err)
+							{
+								
+							}
+						});
+					},
+					
+					//заполнение базы лайков
+					f_get_token_1:function(args)
+					{
+						t_xhr("GET",
+						{
+							url:"f.php?f=t_vkcom_get_token",
+							handleAs:"text",
+							load: function(data)
+							{
+								console.log(data);
+								
+								
+								if (t_uti.f_str_contain(data, '<?xml version="1.0" encoding="utf-8"?>'))
+								{
+									console.log(data);
+									
+									var win=window.open('vk.outch.html','_blank','width=335,height=330,resizable=1')
+									win.document.write(data);
+									setTimeout(function()
+									{
+										console.log(win.location);
+									},5000);
+								}
+								
+								return;
+								t_query(".log_1")[0].innerHTML+=data;
+								//t_attr.set(e.target, "innerHTML","");
+							},
+							error:function(err)
+							{
+								
+							}
+						});
+					},
+					
+					//заполнение базы студентов
+					f_fill_students:function(args)
+					{
+						var self=this;
+						var args=args||{};
+						var limit=args.limit||[];
+						var access_token=t_query(".id_access_token_1")[0].value;
+						var q=t_query(".id_q_1")[0].value;
+						var limit_0=limit[0]||t_query(".id_limit_0_1")[0].value;
+						var limit_1=limit[1]||t_query(".id_limit_1_1")[0].value;
+						var is_recall=args.is_recall;
+						
+						if (!is_recall&&self.args.filling_students)
+						{
+							self.args.filling_students=false;
+							t_query(".btn_fill_stud")[0].innerHTML="Запустить";
+							return;
+						}
+						
+						if(!self.args.filling_students)
+						{
+							self.args.filling_students=true;
+							t_query(".btn_fill_stud")[0].innerHTML="Остановить";
+						}
+						
+						
+						//return;
+						
+						t_xhr("GET",
+						{
+							url:"f.php?f=t_ot_fill_student_tab&q="+q+"&offset="+limit_0+"&count="+limit_1+
+										"&access_token="+access_token,
+							handleAs:"json",
+							load: function(data)
+							{
+								
+								console.log(t_query(".log_1"));
+								t_query(".log_1")[0].innerHTML+=data.log;
+								
+								//ессли процесс заполнения базы не остановили
+								if (self.args.filling_students)
+								{
+									//рекурсивно вызываем себя инкрементируя
+									//диапазон запроса
+									self.f_fill_students(
+									{
+										limit:[new Number(limit_0)+new Number(limit_1), limit_1],
+										is_recall:true,
+									});
+								}
+								
+								//t_attr.set(e.target, "innerHTML","");
+							},
+							error:function(err)
+							{
+								
+							}
+						});
+						
+					},
+					
+					//очистка нода
+					f_clear_log:function(args)
+					{
+						t_query(args.class_query)[0].innerHTML="";
+					},
+					
+					//заполнение базы лайков
+					f_fill_likes:function(args)
+					{
+						t_xhr("GET",
+						{
+							url:"f.php?f=t_ot_fill_likes_random&count=10000",
+							handleAs:"text",
+							load: function(data)
+							{
+								console.log(t_query(".log_1"));
+								t_query(".log_1")[0].innerHTML+=data;
+								//t_attr.set(e.target, "innerHTML","");
+							},
+							error:function(err)
+							{
+								
+							}
+						});
+					},
+				};
+			}
+		);
+	
+	</script>
+	
+</head>
+
+<body>
+	<div class="main">
+		<div class="content_left">
+			<div>Задание 1</div>
+			
+			<div>
+				<div><h3>Наполнение базы из vk.com</h3></div>
+				<div style="overflow: hidden;">
+					<div class="left" style="width: 200px;">access_token</div>
+					<input class="left id_access_token_1 hidden" type="text" value=""/>
+					<textarea class="left id_access_token_1" type="text" value=""></textarea>
+					<div class="btn left btn_get_token" onClick="mod_1.f_get_token_1()">Получить</div>
+				</div>
+				<div>
+					<div class="left"  style="width: 200px;">Запрос</div><input class="id_q_1" type="text" value="Студент"/>
+				</div>
+				<div>
+					<div class="left" style="width: 200px;">Диапазон результатов</div>
+					<input class="left id_limit_0_1" type="text" value="0"/> - 
+					<input class="id_limit_1_1" type="text" value="100"/>
+				</div>
+				<div style="width:100%;overflow:hidden">
+					<div class="btn left btn_fill_stud" onClick="mod_1.f_fill_students()">Запустить</div>
+					<div class="btn left" onClick="mod_1.f_clear_log({class_query:'.log_1'})">Очистить лог</div>
+				</div>
+				<textarea class="log_1" style="min-width:100%;min-height:300px">
+				
+				</textarea>
+			</div>
+			<div>
+				<div>Наполнение лайков рандомом</div>
+				<div style="width:100%;overflow:hidden">
+					<div class="btn left" onClick="mod_1.f_fill_likes()">GO</div>
+				</div>
+				<textarea class="log_1" style="min-width:100%;min-height:300px">
+				
+				</textarea>
+			</div>
+			<div>
+				a) Получить имена и средний балл всех студентов, которые были "лайкнуты" более чем одним студентом.
+			</div>
+			<div>
+				б) Получить имена и средний балл студентов А, которые лайкнули студентов В, но при этом студенты В не поставили лайк ни на одной из страниц других студентов.
+			</div>
+			<div>
+				в) Вернуть имена и средний балл всех студентов, которые не лайкали чужие страницы и не были лайкнуты другими пользователями.
+			</div>
+		</div>
+		<div class="content_center">
+			Задание 2
+		</div>
+		<div class="content_right">
+			Задание 3
+			<div class="btn left" onClick="fdone.f_kvl(
+					[
+						[
+							'f:xhr^url:f.php&lim:form1.lim',
+							
+							
+							'f:xhr^url:f.php&lim:form1.lim&place_from:&place_to:',
+							
+							
+							'f:res^from:log&to:form1.fill_log&replace:false&append:true',
+						]
+					])">GO</div>
+		</div>
+	</div>
+</body>
+
+</html>
