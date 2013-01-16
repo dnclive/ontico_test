@@ -63,6 +63,7 @@
 				"dojo/dom-class",
 				"dojo/query",
 				"dojo/on",
+				"dojo/_base/json",
 				"tlib/tuti",
 			],
 			function
@@ -71,6 +72,7 @@
 				t_dom,
 				t_query,
 				t_on,
+				t_json,
 				t_uti
 			)
 			{
@@ -91,18 +93,9 @@
 					{
 						var win=window.open("https://oauth.vk.com/authorize?client_id=1"+
 								"&redirect_uri=https://oauth.vk.com/blank.html"+
-								"&scope=12&response_type=token",'mywindow','width=400,height=200')
+								"&scope=12&response_type=token",'mywindow','width=800,height=400')
 						
-						//var win=window.open("https://oauth.vk.com/authorize?client_id=1"+
-						//		"&redirect_uri=http://dnclive.ru"+
-						//		"&scope=12&response_type=code",'mywindow','width=400,height=200')
 						
-						setTimeout(function()
-						{
-							console.log(win, win.loaction, win.location);
-						},10000);
-						
-						//console.log(win, win.loaction, win.location);
 						
 						return;
 						
@@ -171,6 +164,10 @@
 						var limit_1=limit[1]||t_query(".id_limit_1_1")[0].value;
 						var is_recall=args.is_recall;
 						
+						console.log("123");
+						
+						//console.log({node:t_query(".id_access_token_1")[0].value});
+						
 						if (!is_recall&&self.args.filling_students)
 						{
 							self.args.filling_students=false;
@@ -191,13 +188,26 @@
 						{
 							url:"f.php?f=t_ot_fill_student_tab&q="+q+"&offset="+limit_0+"&count="+limit_1+
 										"&access_token="+access_token,
-							handleAs:"json",
+							handleAs:"text",
 							load: function(data)
 							{
 								
 								console.log(t_query(".log_1"));
-								t_query(".log_1")[0].innerHTML+=data.log;
-								
+								//на случай если ошибка
+								try
+								{
+									resp=t_json.fromJson(data);
+									console.log(resp);
+									t_query(".log_1")[0].innerHTML+=resp.log;
+									
+								}
+								catch(e)
+								{
+									t_query(".log_1")[0].innerHTML+=data;
+									//console.log(data);
+									//resp=args.resp_data;
+								}
+
 								//ессли процесс заполнения базы не остановили
 								if (self.args.filling_students)
 								{
@@ -262,9 +272,9 @@
 				<div><h3>Наполнение базы из vk.com</h3></div>
 				<div style="overflow: hidden;">
 					<div class="left" style="width: 200px;">access_token</div>
-					<input class="left id_access_token_1 hidden" type="text" value=""/>
-					<textarea class="left id_access_token_1" type="text" value=""></textarea>
-					<div class="btn left btn_get_token" onClick="mod_1.f_get_token_1()">Получить</div>
+					<input class="left id_access_token_1_ hidden" type="text" value=""/>
+					<textarea class="left id_access_token_1"></textarea>
+					<div class="btn left btn_get_token" onClick="mod_1.f_get_token()">Получить</div>
 				</div>
 				<div>
 					<div class="left"  style="width: 200px;">Запрос</div><input class="id_q_1" type="text" value="Студент"/>

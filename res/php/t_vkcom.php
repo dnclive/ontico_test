@@ -40,9 +40,9 @@
 		
 		//$r->send(); 
 		
-		print_r($r);
+		//print_r($r);
 		
-		//print_r($r->getResponseBody());
+		print_r($r->getResponseBody());
 		
 		return;
 		
@@ -161,9 +161,9 @@
 		(
 			array_map	//формируем массив вида ["key:val","key1:val1"...]
 			(
-				function($key,$val) use($drop_empty)
+				function($key,$val) /*use($drop_empty)*///у jino версия php не поддерживает замыканий
 				{
-					if (tuti_f_is_empty($val)&&$drop_empty)
+					if (tuti_f_is_empty($val)/*&&$drop_empty*/)
 					{
 						return "";
 					}

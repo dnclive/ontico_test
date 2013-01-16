@@ -52,13 +52,21 @@
 		
 		t_deb_flog(__LINE__, __FILE__, $sql_query, "t_sql");
 		
-		$q=mysql_query($sql_query);
+		try 
+		{  
+			$q=mysql_query($sql_query); 
+		} catch (Exception $ex) 
+		{ 
+				//echo $ex; 
+				echo("\r\n\r\n Ошбика выполнения запроса. ".mysql_error()."\r\n".$sql_query."\r\n\r\n");
+		}  
+		
+		
 		
 		if (!$q)
 		{
 			echo("\r\n\r\n Ошбика выполнения запроса. ".mysql_error()."\r\n".$sql_query."\r\n\r\n");
 		}
-		
 		
 		mysql_close();
 		

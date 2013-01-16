@@ -55,6 +55,14 @@
 		"body_str"=>file_get_contents('php://input'),
 	));
 	
+	//включение отладки по требованию для указанной группы отладки
+	if (!tuti_f_is_empty($args["all_param_arr"]["debug_group"]))
+	{
+		print_r($args["all_param_arr"]["debug_group"]);
+		$GLOBALS["pj_deb_debug"]=true;
+		$GLOBALS["pj_deb_group"]=$args["all_param_arr"]["debug_group"];
+	}
+	
 	t_deb_flog(__LINE__, __FILE__, $args, "f");
 	
 	tf_f($args);

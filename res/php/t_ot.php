@@ -370,6 +370,66 @@
 		t_deb_flog(__LINE__, __FILE__, $res, "t_ot");
 	}
 	
+	//*** варианты решения подзадачи В
+	function f_student__sql_1($first_name, $last_name)
+	{
+		t_deb_flog(__LINE__, __FILE__, $args, "t_ot");
+		
+		$all_param_arr=$args["all_param_arr"];
+		
+		//границы выборки
+		$limit=$all_param_arr["limit"];
+		$limit_0=tuti_f_is_empty($limit)?0:$limit[0];
+		$limit_1=tuti_f_is_empty($limit)?100:$limit[1];
+		
+		tdeb_f_check("fill_stud_tab","запрос");
+		
+		//*** получаем количество студентов в базе
+		$res=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>
+			"
+				select 
+					name, grade 
+				from 
+					`students` s
+				where 
+					(
+						select 
+							l1.like_id 
+						from 
+							`likes` l1 
+						where 
+ 						s.id=l1.like_id
+ 						and
+						(
+							select 
+								count(*)
+							from 
+								`likes` l2 
+							where 
+								l1.liked_id=l2.like_id
+						)=0
+					)>1
+				limit $limit_0,$limit_1
+			",
+		));
+		
+		tdeb_f_check("fill_stud_tab","запрос выполнен");
+		
+		//формируем ответ
+		
+		$out=array("log"=>"", "res"=>$res);
+		tdeb_f_check_out("fill_stud_tab",&$out["log"]);
+		
+		//преобразуем в json и вкидываем в вывод
+		$GLOBALS["content"].=json_encode($out);
+		
+		t_deb_flog(__LINE__, __FILE__, $res, "t_ot");
+	}
+	
+
 
 	function t_ot_get_stud_A($args)
 	{
