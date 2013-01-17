@@ -27,10 +27,36 @@
 	
 	function tf_f($args)
 	{
+		global $allow_f;
 		$f=$args["all_param_arr"]["f"];
+		
+		//ищем реальное имя функции в доступных
+		$exec_f_name="";
+		foreach($allow_f as $f_conf)
+		{
+			if (tuti_f_is_empty($f_conf["q_f"])&&$f==$f_conf["f"])
+			{
+				$exec_f_name=$f_conf["f"];
+				break;
+			}
+			else
+			{
+				if (in_array($f, $f_conf["q_f"]))
+				{
+					$exec_f_name=$f_conf["f"];
+					break;
+				}
+			}
+		}
+		// если такой функции нет то выходим
+		if (tuti_f_is_empty($exec_f_name))
+		{
+			return;
+		}
 		
 		t_deb_flog(__LINE__, __FILE__, $args, "tf");
 		
+		//выполняем функцию...
 		call_user_func_array($f, array($args));
 	}
 		
