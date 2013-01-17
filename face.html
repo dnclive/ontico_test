@@ -82,6 +82,7 @@
 					args:
 					{
 						filling_students:false,
+						filling_likes:false,
 						vkcom:
 						{
 							access_token:"",
@@ -239,21 +240,115 @@
 					//заполнение базы лайков
 					f_fill_likes:function(args)
 					{
+						var self=this;
+						var args=args||{};
+						var limit=args.limit||[];
+						var count=t_query(".id_count_likes")[0].value;
+						var is_recall=args.is_recall;
+						
+						if (!is_recall&&self.args.filling_likes)
+						{
+							self.args.filling_likes=false;
+							t_query(".id_fill_likes")[0].innerHTML="Запустить";
+							return;
+						}
+						
+						if(!self.args.filling_likes)
+						{
+							self.args.filling_likes=true;
+							t_query(".id_fill_likes")[0].innerHTML="Остановить";
+						}
+						
+						console.log(count);
+						
 						t_xhr("GET",
 						{
-							url:"f.php?f=t_ot_fill_likes_random&count=10000",
+							url:"f.php?f=t_ot_fill_likes_random&count="+count,
 							handleAs:"text",
 							load: function(data)
 							{
 								console.log(t_query(".log_1"));
-								t_query(".log_1")[0].innerHTML+=data;
+								//t_query(".log_1")[0].innerHTML+=data;
 								//t_attr.set(e.target, "innerHTML","");
+								//console.log(t_query(".log_1"));
+								//на случай если ошибка
+								try
+								{
+									resp=t_json.fromJson(data);
+									console.log(resp);
+									t_query(".log_2")[0].innerHTML+=resp.log;
+									
+								}
+								catch(e)
+								{
+									t_query(".log_2")[0].innerHTML+=data;
+									//console.log(data);
+									//resp=args.resp_data;
+								}
+
+								//ессли процесс заполнения базы не остановили
+								if (self.args.filling_likes)
+								{
+									//рекурсивно вызываем себя инкрементируя
+									//диапазон запроса
+									self.f_fill_likes(
+									{
+										is_recall:true,
+									});
+								}
 							},
 							error:function(err)
 							{
 								
 							}
 						});
+					},
+					
+					
+					//получение последних новостей
+					f_get_news:function(args)
+					{
+						var self=this;
+						var args=args||{};
+						var limit=args.limit||[];
+						var count=t_query(".id_count_news")[0].value;
+						
+						console.log("123");
+						
+						
+						//return;
+						
+						t_xhr("GET",
+						{
+							url:"f.php?f=f_news_1&count="+count,
+							handleAs:"text",
+							load: function(data)
+							{
+								
+								console.log(t_query(".log_3"));
+								//на случай если ошибка
+								try
+								{
+									resp=t_json.fromJson(data);
+									console.log(resp);
+									t_query(".log_3")[0].innerHTML+=resp.log;
+									
+								}
+								catch(e)
+								{
+									t_query(".log_3")[0].innerHTML+=data;
+									//console.log(data);
+									//resp=args.resp_data;
+								}
+
+								
+							},
+							error:function(err)
+							{
+								
+							}
+						});
+						
 					},
 				};
 			}
@@ -293,11 +388,15 @@
 				</textarea>
 			</div>
 			<div>
-				<div>Наполнение лайков рандомом</div>
-				<div style="width:100%;overflow:hidden">
-					<div class="btn left" onClick="mod_1.f_fill_likes()">GO</div>
+				<div><h3>Наполнение лайков рандомом</h3></div>
+				<div>
+					<div class="left" style="width: 200px;">Count</div>
+					<input class="left id_count_likes" type="text" value="0"/>
 				</div>
-				<textarea class="log_1" style="min-width:100%;min-height:300px">
+				<div style="width:100%;overflow:hidden">
+					<div class="btn left id_fill_likes" onClick="mod_1.f_fill_likes()">Запустить</div>
+				</div>
+				<textarea class="log_2" style="min-width:100%;min-height:300px">
 				
 				</textarea>
 			</div>
@@ -311,8 +410,17 @@
 				в) Вернуть имена и средний балл всех студентов, которые не лайкали чужие страницы и не были лайкнуты другими пользователями.
 			</div>
 		</div>
-		<div class="content_center">
-			Задание 2
+		<div class="content_center" style="padding:10px">
+			<div>
+					<div class="left" style="width: 200px;">Count</div>
+					<input class="left id_count_news" type="text" value="0"/>
+				</div>
+				<div style="width:100%;overflow:hidden">
+					<div class="btn left btn_get_news" onClick="mod_1.f_get_news()">Получить</div>
+				</div>
+				<textarea class="log_3" style="min-width:100%;min-height:300px">
+				
+				</textarea>
 		</div>
 		<div class="content_right">
 			Задание 3
@@ -327,7 +435,7 @@
 							
 							'f:res^from:log&to:form1.fill_log&replace:false&append:true',
 						]
-					])">GO</div>
+					])"></div>
 		</div>
 	</div>
 </body>

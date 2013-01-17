@@ -30,5 +30,21 @@ $db_ssn=array
 	"db_name"=>"db_ssn",
 )
 
+//массив доступных к вызову функций
+//f - имя функции в коде
+//q_f - массив псевдонимов функции, которые могут быть указаны в запросе
+// и при этом будет вызвана f, если q_f пуст можно указать в запросе f
+
+$allow_f=array
+(
+	array("f"=>"t_ot_fill_student_tab",			"q_f"=>array()),
+	array("f"=>"t_ot_fill_likes_random",		"q_f"=>array()),
+	array("f"=>"f_student_A_sql_1",				"q_f"=>array()),
+	array("f"=>"f_student_A_sql_2",				"q_f"=>array()),
+	array("f"=>"f_student_A_sql_3",				"q_f"=>array()),
+	array("f"=>"f_student_B_sql_1",				"q_f"=>array()),
+	array("f"=>"f_student_C_sql_1",				"q_f"=>array()),
+	array("f"=>"f_news_1",						"q_f"=>array()),
+);
 
 ?>
