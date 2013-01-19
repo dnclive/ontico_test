@@ -30,11 +30,14 @@
 		global $allow_f;
 		$f=$args["all_param_arr"]["f"];
 		
+		t_deb_flog(__LINE__, __FILE__, $f, "tf");
+		
 		//ищем реальное имя функции в доступных
 		$exec_f_name="";
 		foreach($allow_f as $f_conf)
 		{
-			if (tuti_f_is_empty($f_conf["q_f"])&&$f==$f_conf["f"])
+			t_deb_flog(__LINE__, __FILE__, $f_conf, "tf");
+			if (count($f_conf["q_f"])==0&&$f==$f_conf["f"])
 			{
 				$exec_f_name=$f_conf["f"];
 				break;
@@ -51,6 +54,7 @@
 		// если такой функции нет то выходим
 		if (tuti_f_is_empty($exec_f_name))
 		{
+			echo("function $f not exist, or not allow to call...");
 			return;
 		}
 		

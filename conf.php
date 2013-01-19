@@ -21,15 +21,25 @@
  */
 
 
-
+//local
 $db_ssn=array
 (
 	"db_server"=>"localhost",
 	"db_user"=>"root",
 	"db_pass"=>"123",
 	"db_name"=>"db_ssn",
-)
+);
 
+/*
+//jino
+$db_ssn=array
+(
+	"db_server"=>"localhost",
+	"db_user"=>"045222217_ontiko",
+	"db_pass"=>"u05JrCUfFN",
+	"db_name"=>"kibicom_ontiko",
+);
+*/
 //массив доступных к вызову функций
 //f - имя функции в коде
 //q_f - массив псевдонимов функции, которые могут быть указаны в запросе
@@ -45,6 +55,13 @@ $allow_f=array
 	array("f"=>"f_student_B_sql_1",				"q_f"=>array()),
 	array("f"=>"f_student_C_sql_1",				"q_f"=>array()),
 	array("f"=>"f_news_1",						"q_f"=>array()),
+	array("f"=>"f_news_2",						"q_f"=>array()),
+	array("f"=>"f_news_3",						"q_f"=>array()),
+	array("f"=>"f_tab_news_1",					"q_f"=>array()),
+	array("f"=>"f_tab_news_2",					"q_f"=>array()),
+	array("f"=>"f_tab_news_3",					"q_f"=>array()),
+	array("f"=>"f_news_fill",					"q_f"=>array()),
+	array("f"=>"f_news_fill_2",					"q_f"=>array()),
 );
 
 ?>

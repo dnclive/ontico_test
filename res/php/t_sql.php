@@ -55,6 +55,8 @@
 		try 
 		{  
 			$q=mysql_query($sql_query); 
+			//$q=mysql_unbuffered_query($sql_query); 
+			
 		} catch (Exception $ex) 
 		{ 
 				//echo $ex; 
@@ -95,6 +97,75 @@
 		));
 		
 		t_deb_flog(__LINE__, __FILE__, $q, "f");
+		
+	}
+	
+	function tstore_fid_1($db, $tab)
+	{
+		pj_deb_flog3(__LINE__, __FILE__, $tab, "tkvl3");
+		pj_deb_flog3(__LINE__, __FILE__, $db, "tkvl3");
+		pj_deb_flog3(__LINE__, __FILE__, "select * from tab_id_gen where tab like '$tab'", "tkvl3");
+		
+		//print_r("123");
+		//print_r($db);
+		
+		/*
+		//пытаемся получить строку генератора указанной таблицы для указанного id
+		$q=trdb_mysql_fexec_9(array(
+										"db"=>$db,
+										"sql_query"=>"select * from tab_id_gen where tab like '$tab'"
+									));
+		
+		//если не возвращен ресурс то запрос не выполнился (нет сервера, базы, таблицы и тд)
+		//возвращаем null
+		if (is_null($q)) return null;
+		//pj_deb_flog3(__LINE__, __FILE__, is_null($q), "tkvl3");
+		
+		t_deb_flog(__LINE__, __FILE__, trdb_mysql_ftab_2_arr($q), "t_ot5");
+		
+		//если нет генератора для данного id таблицы  то создаем его
+		if (mysql_num_rows($q)===0&&!$GLOBALS["trdb_mysql_connection_error"])	
+		{
+			$new_id_gen=tstore_fid($db, "tab_id_gen&id");
+			$q=trdb_mysql_fexec_9(array(
+									"db"=>$db,
+									"sql_query"=>"insert tab_id_gen (id, tab, gen_id) ".
+													" values($new_id_gen, '$tab', 0)"
+								));
+		}
+		*/
+		//теперь в любом случаее есть строка нужного нам генератора
+		//выбираем ее и запоминаем текущий id
+		
+		$q_arr=t_sql_f(array
+		(
+			"db"=>$db,
+			"sql_query"=>"select * from tab_id_gen where tab like '$tab'"
+		));
+		
+		//$q_arr=trdb_mysql_ftab_2_arr($q);
+		
+		//t_deb_flog(__LINE__, __FILE__, $q_arr, "t_ot5");
+		
+		//текущий id - возвращается наверх
+		$id=$q_arr[0]["gen_id"];
+		
+		pj_deb_flog3(__LINE__, __FILE__, "update tab_id_gen set gen_id=".($id+1)." where tab like '$tab'", "tkvl3");
+		
+		pj_deb_flog3(__LINE__, __FILE__, $id, "tkvl3");
+		
+		//обновляем текущий id+1
+		$q=t_sql_f(array
+		(
+			"db"=>$db,
+			"sql_query"=>"update tab_id_gen set gen_id=".($id+1)." where tab like '$tab'"
+		));
+		
+		pj_deb_flog3(__LINE__, __FILE__, $q_arr, "tkvl3");
+		
+		
+		
+		return $id;
 		
 	}
 

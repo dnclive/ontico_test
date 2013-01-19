@@ -20,6 +20,8 @@
  * MA 02110-1301, USA.
  */
 
+	//инклуды
+	require_once('magpierss/rss_fetch.inc');	//работа с rss
 
 	function t_ot_fill_student_tab($args)
 	{
@@ -190,8 +192,11 @@
 			$out="";
 			tdeb_f_check_out("fill_stud_tab",&$out, true);
 			$GLOBALS["content"].=$out;
+			
 			//преобразуем в json и вкидываем в вывод
-			$GLOBALS["content"].=json_encode($res);
+			
+			$GLOBALS["content"].=trdb_mysql_fhtml_table_1($res);
+			//$GLOBALS["content"].=json_encode($res);
 		}
 		
 		t_deb_flog(__LINE__, __FILE__, $res, "t_ot");
@@ -416,6 +421,139 @@
 	
 	
 	//*** виджет новостей
+	function f_news_fill($args)
+	{
+		$all_param_arr=$args["all_param_arr"];
+		
+		//количество возвращаемых новостей
+		$rss_url=$all_param_arr["rss_url"];
+		
+		t_deb_flog(__LINE__, __FILE__, $rss_url, "t_ot");
+		
+		$rss = fetch_rss($rss_url);
+		
+		tdeb_f_check("fill_stud_tab","запрос");
+		
+		$i=100;
+		while($i-->0)
+		{
+			//*** формируем sql запрос добавление новостей в базу
+			$sql="insert `news` (`dtcre`, `name`, `content`, `timestamp`) values \r\n";
+			$values="";
+			foreach($rss->items as $item)
+			{
+				t_deb_flog(__LINE__, __FILE__, $item["pubdate"], "t_ot2");
+				t_deb_flog(__LINE__, __FILE__, date_timestamp_get(new DateTime($item["pubdate"])), "t_ot2");
+				//$sql.="('".$item["first_name"]." ".$item["last_name"]."', ".rand(1,5)."),\r\n";
+				$values=tuti_f_str_join($values, ",\r\n", 
+						"(FROM_UNIXTIME(".date_timestamp_get(new DateTime($item["pubdate"]))."), ".
+							"'".mysql_escape_string($item["title"])."', ".
+							"'".mysql_escape_string(json_encode($item))."', ".
+							"FROM_UNIXTIME(".$item["date_timestamp"].")".")");
+			}
+		
+		
+		
+			$sql.=$values;
+			
+			t_deb_flog(__LINE__, __FILE__, $sql, "t_ot");
+			
+			tdeb_f_check("fill_stud_tab","запрос сформирован");
+			
+			//*** выполняем сформированный запрос
+			$q=t_sql_f(array
+			(
+				"db"=>$GLOBALS["db_ssn"],
+				"sql_query"=>$sql,
+			));
+			
+			tdeb_f_check("fill_stud_tab","запрос выполнен");
+		
+		}
+		
+		t_deb_flog(__LINE__, __FILE__, $q, "f");
+		
+		$out=array("log"=>"", "res"=>array());
+		tdeb_f_check_out("fill_stud_tab",&$out["log"]);
+		
+		//преобразуем в json и вкидываем в вывод
+		$GLOBALS["content"].=json_encode($out);
+		
+		//print_r($rss);
+	}
+	
+	function f_news_fill_2($args)
+	{
+		$all_param_arr=$args["all_param_arr"];
+		
+		//количество возвращаемых новостей
+		$rss_url=$all_param_arr["rss_url"];
+		
+		t_deb_flog(__LINE__, __FILE__, $rss_url, "t_ot");
+		
+		$rss = fetch_rss($rss_url);
+		
+		tdeb_f_check("fill_stud_tab","запрос");
+		
+		set_time_limit(300);
+		
+		$i=100;
+		while($i-->0)
+		{
+			//*** формируем sql запрос добавление новостей в базу
+			$sql="insert `tab_news` (`id`, `dtcre`, `name`, `content`, `timestamp`) values \r\n";
+			$values="";
+			foreach($rss->items as $item)
+			{
+				t_deb_flog(__LINE__, __FILE__, $item["pubdate"], "t_ot2");
+				t_deb_flog(__LINE__, __FILE__, date_timestamp_get(new DateTime($item["pubdate"])), "t_ot2");
+				//t_deb_flog(__LINE__, __FILE__, tstore_fid($GLOBALS["db_ssn"], "tab_news&id"), "t_ot4");
+				//$sql.="('".$item["first_name"]." ".$item["last_name"]."', ".rand(1,5)."),\r\n";
+				$id=tstore_fid_1($GLOBALS["db_ssn"], "tab_news&id");
+				t_deb_flog(__LINE__, __FILE__, $id, "t_ot5");
+				$values=tuti_f_str_join($values, ",\r\n", 
+						"(".$id.", ".
+						"FROM_UNIXTIME(".date_timestamp_get(new DateTime($item["pubdate"]))."), ".
+							"'".mysql_escape_string($item["title"])."', ".
+							"'".mysql_escape_string(json_encode($item))."', ".
+							"FROM_UNIXTIME(".$item["date_timestamp"].")".")");
+							
+				//t_deb_flog(__LINE__, __FILE__, $values, "t_ot5");
+			}
+		
+		
+		
+			$sql.=$values;
+			
+			t_deb_flog(__LINE__, __FILE__, $sql, "t_ot4");
+			
+			//continue;
+			
+			tdeb_f_check("fill_stud_tab","запрос сформирован");
+			
+			//*** выполняем сформированный запрос
+			$q=t_sql_f(array
+			(
+				"db"=>$GLOBALS["db_ssn"],
+				"sql_query"=>$sql,
+			));
+			
+			tdeb_f_check("fill_stud_tab","запрос выполнен");
+		
+		}
+		
+		t_deb_flog(__LINE__, __FILE__, $q, "f");
+		
+		$out=array("log"=>"", "res"=>array());
+		tdeb_f_check_out("fill_stud_tab",&$out["log"]);
+		
+		//преобразуем в json и вкидываем в вывод
+		$GLOBALS["content"].=json_encode($out);
+		
+		//print_r($rss);
+	}
+	
+	
 	function f_news_1($args)
 	{
 		t_deb_flog(__LINE__, __FILE__, $args, "t_ot");
@@ -425,6 +563,12 @@
 		//количество возвращаемых новостей
 		$count=intval($all_param_arr["count"]);
 		
+		tdeb_f_check("fill_stud_tab","начало");
+		
+		
+		//формат выдачи json/html
+		$format=tuti_f_is_empty($all_param_arr["format"])?"json":$all_param_arr["format"];
+		
 		//текущее количество строк новостей
 		$lim_res=t_sql_f(array
 		(
@@ -432,6 +576,7 @@
 			"sql_query"=>"select count(*) as count from news",
 		));
 				
+		tdeb_f_check("fill_stud_tab","получено количество строк в таблице");
 		
 		//смещение выборки количество строк- количество вибираемых
 		$limit_0=$lim_res[0]["count"]-$count;
@@ -441,21 +586,476 @@
 		//
 		$limit_1=$count;
 		
-		tdeb_f_check("fill_stud_tab","запрос");
 		
-		$args["sql"]=
-		"
-			select 
-					id, dtcre,name, descr
-				from 
-					`news` n
-				limit $limit_0,$limit_1
-		";
+		//*** выполняем переданный sql
+		$res=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>"
+							select 
+									id, dtcre,name, content
+								from 
+									`news` n
+								limit $limit_0,$limit_1
+						",
+		));
 		
-		t_ot_f_query($args);
+		tdeb_f_check("fill_stud_tab","запрос новостей");
+		
+		$news=array();
+		foreach($res as $item)
+		{
+			
+			array_push($news, json_decode($item["content"]));
+		}
+		
+		t_deb_flog(__LINE__, __FILE__, $news, "t_ot3");
+		
+		//формируем ответ
+		//если формат json
+		if (stripos($format, "json")===0)
+		{
+			//размещаем все в структуре и возвращаем ответ
+			$out=array("log"=>"", "res"=>$news);
+			tdeb_f_check_out("fill_stud_tab",&$out["log"]);
+			
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($out);
+		}
+		else
+		{
+			$out="";
+			tdeb_f_check_out("fill_stud_tab",&$out, true);
+			$GLOBALS["content"].=$out;
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($res);
+		}
+		
+	}
+	
+	function f_news_2($args)
+	{
+		t_deb_flog(__LINE__, __FILE__, $args, "t_ot");
+		
+		$all_param_arr=$args["all_param_arr"];
+		
+		//количество возвращаемых новостей
+		$count=intval($all_param_arr["count"]);
+		
+		tdeb_f_check("fill_stud_tab","начало");
+		
+		
+		//формат выдачи json/html
+		$format=tuti_f_is_empty($all_param_arr["format"])?"json":$all_param_arr["format"];
+		
+		//текущее количество строк новостей
+		$lim_res=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>"select count(*) as count from news",
+		));
+				
+		tdeb_f_check("fill_stud_tab","получено количество строк в таблице");
+		
+		//смещение выборки количество строк- количество вибираемых
+		$limit_0=$lim_res[0]["count"]-$count;
+		
+		if ($limit_0<0) return;
+		
+		//
+		$limit_1=$count;
+		
+		
+		//*** выполняем переданный sql
+		$res=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>"
+							select 
+									id, dtcre,name, content
+								from 
+									`news` n
+								order by id desc
+							limit 0, $count 
+						",
+		));
+		
+		tdeb_f_check("fill_stud_tab","запрос новостей");
+		
+		$news=array();
+		foreach($res as $item)
+		{
+			
+			array_push($news, json_decode($item["content"]));
+		}
+		
+		t_deb_flog(__LINE__, __FILE__, $news, "t_ot3");
+		
+		//формируем ответ
+		//если формат json
+		if (stripos($format, "json")===0)
+		{
+			//размещаем все в структуре и возвращаем ответ
+			$out=array("log"=>"", "res"=>$news);
+			tdeb_f_check_out("fill_stud_tab",&$out["log"]);
+			
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($out);
+		}
+		else
+		{
+			$out="";
+			tdeb_f_check_out("fill_stud_tab",&$out, true);
+			$GLOBALS["content"].=$out;
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($res);
+		}
+		
+	}
+	
+	function f_news_3($args)
+	{
+		t_deb_flog(__LINE__, __FILE__, $args, "t_ot");
+		
+		$all_param_arr=$args["all_param_arr"];
+		
+		//количество возвращаемых новостей
+		$count=intval($all_param_arr["count"]);
+		
+		tdeb_f_check("fill_stud_tab","начало");
+		
+		
+		//формат выдачи json/html
+		$format=tuti_f_is_empty($all_param_arr["format"])?"json":$all_param_arr["format"];
+		
+		//текущее количество строк новостей
+		$lim_res=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>"select count(*) as count from news",
+		));
+				
+		tdeb_f_check("fill_stud_tab","получено количество строк в таблице");
+		
+		//смещение выборки количество строк- количество вибираемых
+		$limit_0=$lim_res[0]["count"]-$count;
+		
+		if ($limit_0<0) return;
+		
+		//
+		$limit_1=$count;
+		
+		
+		//*** выполняем переданный sql
+		$res=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>"
+							select 
+									id, dtcre,name, content
+								from 
+									`news` n
+								order by id desc
+							limit 0, $count 
+						",
+		));
+		
+		tdeb_f_check("fill_stud_tab","запрос новостей");
+		
+		$news=array();
+		foreach($res as $item)
+		{
+			
+			array_push($news, json_decode($item["content"]));
+		}
+		
+		t_deb_flog(__LINE__, __FILE__, $news, "t_ot3");
+		
+		//формируем ответ
+		//если формат json
+		if (stripos($format, "json")===0)
+		{
+			//размещаем все в структуре и возвращаем ответ
+			$out=array("log"=>"", "res"=>$news);
+			tdeb_f_check_out("fill_stud_tab",&$out["log"]);
+			
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($out);
+		}
+		else
+		{
+			$out="";
+			tdeb_f_check_out("fill_stud_tab",&$out, true);
+			$GLOBALS["content"].=$out;
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($res);
+		}
+		
 	}
 	
 
+	function f_tab_news_1($args)
+	{
+		t_deb_flog(__LINE__, __FILE__, $args, "t_ot");
+		
+		$all_param_arr=$args["all_param_arr"];
+		
+		//количество возвращаемых новостей
+		$count=intval($all_param_arr["count"]);
+		
+		$tab_name="tab_news";
+		
+		tdeb_f_check("fill_stud_tab","начало");
+		
+		
+		//формат выдачи json/html
+		$format=tuti_f_is_empty($all_param_arr["format"])?"json":$all_param_arr["format"];
+		
+		//текущее количество строк новостей
+		$lim_res=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>"select count(*) as count from $tab_name",
+		));
+				
+		tdeb_f_check("fill_stud_tab","получено количество строк в таблице");
+		
+		//смещение выборки количество строк- количество вибираемых
+		$limit_0=$lim_res[0]["count"]-$count;
+		
+		if ($limit_0<0) return;
+		
+		//
+		$limit_1=$count;
+		
+		
+		//*** выполняем переданный sql
+		$res=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>"
+							select 
+									id, dtcre,name, content
+								from 
+									`$tab_name` n FORCE INDEX (PRIMARY)
+								limit $limit_0,$limit_1
+						",
+		));
+		
+		tdeb_f_check("fill_stud_tab","запрос новостей");
+		
+		$news=array();
+		foreach($res as $item)
+		{
+			
+			array_push($news, json_decode($item["content"]));
+		}
+		
+		t_deb_flog(__LINE__, __FILE__, $news, "t_ot3");
+		
+		//формируем ответ
+		//если формат json
+		if (stripos($format, "json")===0)
+		{
+			//размещаем все в структуре и возвращаем ответ
+			$out=array("log"=>"", "res"=>$news);
+			tdeb_f_check_out("fill_stud_tab",&$out["log"]);
+			
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($out);
+		}
+		else
+		{
+			$out="";
+			tdeb_f_check_out("fill_stud_tab",&$out, true);
+			$GLOBALS["content"].=$out;
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($res);
+		}
+		
+	}
 	
+	function f_tab_news_2($args)
+	{
+		t_deb_flog(__LINE__, __FILE__, $args, "t_ot");
+		
+		$all_param_arr=$args["all_param_arr"];
+		
+		//количество возвращаемых новостей
+		$count=intval($all_param_arr["count"]);
+		
+		$tab_name="tab_news";
+		
+		tdeb_f_check("fill_stud_tab","начало");
+		
+		
+		//формат выдачи json/html
+		$format=tuti_f_is_empty($all_param_arr["format"])?"json":$all_param_arr["format"];
+		
+		
+		//*** выполняем переданный sql
+		$res=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>"
+							select 
+									id, dtcre,name, content
+								from 
+									`$tab_name` n
+								order by id desc
+							limit 0, $count 
+						",
+		));
+		
+		tdeb_f_check("fill_stud_tab","запрос новостей");
+		
+		$news=array();
+		foreach($res as $item)
+		{
+			
+			array_push($news, json_decode($item["content"]));
+		}
+		
+		t_deb_flog(__LINE__, __FILE__, $news, "t_ot3");
+		
+		//формируем ответ
+		//если формат json
+		if (stripos($format, "json")===0)
+		{
+			//размещаем все в структуре и возвращаем ответ
+			$out=array("log"=>"", "res"=>$news);
+			tdeb_f_check_out("fill_stud_tab",&$out["log"]);
+			
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($out);
+		}
+		else
+		{
+			$out="";
+			tdeb_f_check_out("fill_stud_tab",&$out, true);
+			$GLOBALS["content"].=$out;
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($res);
+		}
+		
+	}
+	
+	function f_tab_news_3($args)
+	{
+		t_deb_flog(__LINE__, __FILE__, $args, "t_ot");
+		
+		$all_param_arr=$args["all_param_arr"];
+		
+		//количество возвращаемых новостей
+		$count=intval($all_param_arr["count"]);
+		
+		$tab_name="tab_news";
+		
+		tdeb_f_check("fill_stud_tab","начало");
+		
+		
+		//формат выдачи json/html
+		$format=tuti_f_is_empty($all_param_arr["format"])?"json":$all_param_arr["format"];
+		
+		//текущее количество строк новостей
+		$tab_id_gen=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>"select gen_id from tab_id_gen where tab like '$tab_name&id'",
+		));
+				
+		tdeb_f_check("fill_stud_tab","получен последний выделенный id");
+		
+		$after_id=(int)$tab_id_gen[0]["gen_id"]-(int)$count-1;
+		
+		t_deb_flog(__LINE__, __FILE__, $after_id, "t_ot_6");
+		
+		//*** выполняем переданный sql
+		$res=t_sql_f(array
+		(
+			"db"=>$GLOBALS["db_ssn"],
+			"sql_query"=>"
+							select 
+								id, dtcre,name, content
+							from 
+								`$tab_name` n
+							where 
+								id>$after_id
+						",
+		));
+		
+		tdeb_f_check("fill_stud_tab","запрос новостей");
+		
+		$news=array();
+		foreach($res as $item)
+		{
+			
+			array_push($news, json_decode($item["content"]));
+		}
+		
+		t_deb_flog(__LINE__, __FILE__, $news, "t_ot3");
+		
+		//формируем ответ
+		//если формат json
+		if (stripos($format, "json")===0)
+		{
+			//размещаем все в структуре и возвращаем ответ
+			$out=array("log"=>"", "res"=>$news);
+			tdeb_f_check_out("fill_stud_tab",&$out["log"]);
+			
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($out);
+		}
+		else
+		{
+			$out="";
+			tdeb_f_check_out("fill_stud_tab",&$out, true);
+			$GLOBALS["content"].=$out;
+			//преобразуем в json и вкидываем в вывод
+			$GLOBALS["content"].=json_encode($res);
+		}
+		
+	}
+	
+	
+	//вывод в html
+	 function trdb_mysql_fhtml_table_1(&$q)
+	 {
+		echo "<table style=\"border:solid\">";
+		
+		//названия полей шапка
+		echo "<tr>";
+		$i=0;
+		while($i<mysql_num_fields($q))
+		{
+			$tab_col=mysql_fetch_field($q, $i);
+			echo "<td>$tab_col->name</td>";
+			$i++;
+		}
+		echo "</tr>";
+		
+		// Выводим таблицу:
+		$i=0;
+		while($tab_row=mysql_fetch_row($q))
+		{
+			echo "<tr>";
+			//$tab_row=array();
+			//$tab_row[]=mysql_fetch_array($q);
+			//$tab_row = mysql_fetch_array($q);
+			//$tab[]=$tab_row;
+			foreach($tab_row as $val)
+			{
+				echo "<td>$val</td>";
+				//echo "<td>$f[idtab_pi]</td><td>$f[id_pi]</td><td>$f[dtcre]</td>";
+				//echo "<td>$f[deleted]</td><td>$f[kvl]</td><td>$f[f]</td>";
+			}
+			echo "</tr>";
+			$i++;
+		}
+		echo "</table>";
+		
+		mysql_data_seek($q, 0);
+		
+	 }
 
 ?> 

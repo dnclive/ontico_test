@@ -35,6 +35,7 @@
 	//инклуды
 	require_once(dirname(__FILE__)."/../josi_lib/php/dev/tdeb.php");		//библиотека отладки
 	require_once(dirname(__FILE__)."/../josi_lib/php/dev/tuti.php");		//библиотека разных полезных функций
+	require_once(dirname(__FILE__)."/../josi_lib/php/dev/tstore.php");		//работа с хранилищем данных
 	require_once("t_sql.php");							//библиотека работы с mysql
 	require_once("t_vkcom.php");						//библиотека для работы с vk.com
 	require_once("tf.php");								//библиотека для работы с функциями
